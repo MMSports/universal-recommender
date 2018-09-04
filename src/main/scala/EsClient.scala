@@ -99,10 +99,13 @@ object EsClient {
   }
 
   var _sharedRestClient: Option[RestClient] = None
-
+  var internalHosts: Seq[HttpHost] = Nil
   def open(
     hosts: Seq[HttpHost],
     basicAuth: Option[(String, String)] = None): RestClient = {
+    println("HOSTS!!");
+    println(hosts);
+    internalHosts = hosts;
     val newClient = _sharedRestClient match {
       case Some(c) => c
       case None => {
@@ -297,7 +300,7 @@ object EsClient {
       }
     }
 
-    val esConfig = Map("es.mapping.id" -> "id") ++
+    val esConfig = Map("es.mapping.id" -> "id", "es.nodes.wan.only" -> "true", "es.nodes" -> internalHosts.mkString(",")) ++
       usernamePasswordOpt.map(usernamePassword =>
         Map(
           "es.net.http.auth.user" -> usernamePassword._1,
